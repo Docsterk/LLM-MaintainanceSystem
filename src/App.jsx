@@ -1,8 +1,57 @@
+// src/App.jsx
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Activity from './pages/Activity';
 import Admin from './pages/Admin';
+import History from './pages/History';
+import Footer from './components/Footer';
+
+const SLIDES = [
+  '/backgrounds/bg1.jpg',
+  '/backgrounds/bg2.jpg',
+  '/backgrounds/bg3.jpg',
+  '/backgrounds/bg4.jpg',
+  '/backgrounds/bg5.jpg',
+  '/backgrounds/bg6.jpg',
+  '/backgrounds/bg7.jpg',
+  '/backgrounds/bg8.jpg',
+];
+
+function BgSlideshow() {
+  const [current, setCurrent] = useState(0);
+  const [next, setNext]       = useState(1);
+  const [fading, setFading]   = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setCurrent(c => (c + 1) % SLIDES.length);
+        setNext(n => (n + 1) % SLIDES.length);
+        setFading(false);
+      }, 2000);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const base = {
+    position: 'fixed',
+    inset: 0,
+    zIndex: -1,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  };
+
+  return (
+    <>
+      <div style={{ ...base, backgroundImage: `url(${SLIDES[current]})`, opacity: 0.05 }} />
+      <div style={{ ...base, backgroundImage: `url(${SLIDES[next]})`, opacity: fading ? 0.05 : 0, transition: 'opacity 1000ms ease-in-out' }} />
+    </>
+  );
+}
 
 function PrivateRoute({ children, allowedRoles }) {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -25,22 +74,19 @@ function Layout({ children }) {
     : 'U';
 
   const roleLabel = {
-    admin: 'System Admin',
-    expert: 'Expert Technician',
+    admin:        'System Admin',
+    expert:       'Expert Technician',
     intermediate: 'Intermediate Tech',
-    beginner: 'Beginner Tech',
+    beginner:     'Beginner Tech',
   }[user?.role] || 'Technician';
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
+      <BgSlideshow />
+
       <nav className="nav">
-        {/* Logo and Brand Section - Updated with image logo */}
         <div className="nav-brand">
-          <img 
-            src="/logo.png" 
-            alt="FedEx Copilot Logo" 
-            className="nav-logo"
-          />
+          <img src="/logo.png" alt="FedEx Copilot Logo" className="nav-logo" />
           <span className="nav-brand-text">Maintenance Copilot</span>
         </div>
 
@@ -56,6 +102,12 @@ function Layout({ children }) {
             className={`nav-link ${location.pathname === '/activity' ? 'active' : ''}`}
           >
             Activity
+          </Link>
+          <Link
+            to="/history"
+            className={`nav-link ${location.pathname === '/history' ? 'active' : ''}`}
+          >
+            History
           </Link>
           {user?.role === 'admin' && (
             <Link
@@ -78,7 +130,12 @@ function Layout({ children }) {
           <button onClick={handleLogout} className="logout-button">Logout</button>
         </div>
       </nav>
-      <main>{children}</main>
+
+      <main style={{ flex: '1 1 auto', display: 'block', width: '100%', minWidth: 0, overflow: 'auto' }}>
+        {children}
+      </main>
+
+      <Footer />
     </div>
   );
 }
@@ -96,6 +153,11 @@ function App() {
         <Route path="/activity" element={
           <PrivateRoute allowedRoles={['expert', 'intermediate', 'beginner', 'admin']}>
             <Layout><Activity /></Layout>
+          </PrivateRoute>
+        } />
+        <Route path="/history" element={
+          <PrivateRoute allowedRoles={['expert', 'intermediate', 'beginner', 'admin']}>
+            <Layout><History /></Layout>
           </PrivateRoute>
         } />
         <Route path="/admin" element={

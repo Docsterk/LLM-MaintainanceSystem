@@ -11,8 +11,6 @@ export default function QueryInput({ onSubmit, disabled }) {
     }
   };
 
-  const quickTags = ['Unit #403', 'Engine Cover', 'Hydraulics', 'Landing Gear'];
-
   return (
     <div className="query-card">
       <div className="card-label">Task Description</div>
@@ -20,28 +18,11 @@ export default function QueryInput({ onSubmit, disabled }) {
         <textarea
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Describe the disassembly task or problem... e.g. Engine cover removal on Unit #403"
+          placeholder="Enter a maintenance task, equipment issue, or disassembly request…"
           className="query-textarea"
           rows="3"
           disabled={disabled}
         />
-
-        <div className="tag-row">
-          {quickTags.map(tag => (
-            <button
-              key={tag}
-              type="button"
-              className="tag"
-              style={{ cursor: 'pointer', border: 'none' }}
-              onClick={() => setQuery(prev => prev ? `${prev} ${tag}` : tag)}
-              disabled={disabled}
-            >
-              <span className="tag-dot"></span>
-              {tag}
-            </button>
-          ))}
-        </div>
-
         <div style={{ marginTop: '12px' }}>
           <button
             type="submit"

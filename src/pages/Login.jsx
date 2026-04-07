@@ -62,20 +62,7 @@ export default function Login() {
           </div>
         </form>
 
-        <div style={{ marginTop: '20px', padding: '12px', background: 'var(--bg-elevated)', borderRadius: '8px', border: '1px solid var(--border)' }}>
-          <div className="card-label" style={{ marginBottom: '8px' }}>Demo Accounts</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {[
-              ['admin@fedex.com', 'Admin', 'badge-purple'],
-              ['expert@fedex.com', 'Expert Technician', 'badge-blue'],
-            ].map(([em, label, cls]) => (
-              <div key={em} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{em}</span>
-                <span className={`badge ${cls}`}>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+     
 
         <div className="audit-notice" style={{ marginTop: '16px' }}>
           🔒 Secured with Role-Based Access Control
