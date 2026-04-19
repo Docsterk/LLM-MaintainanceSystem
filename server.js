@@ -1,41 +1,44 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
+const dotenv = require('dotenv');
+dotenv.config();
 
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Mock endpoint for query
-app.post('/api/query', (req, res) => {
-  const { query } = req.body;
-  console.log('Received query:', query);
+app.post('/api/query', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query?.trim()) return res.status(400).json({ error: 'Query required' });
 
-  // Simulate processing delay
-  setTimeout(() => {
-    res.json({
-      text: "1. Power down the system.\n2. Remove the four bolts on the engine cover using a 10mm socket.\n3. Carefully lift the cover straight up.",
-      sources: [
-        { title: "Engine Manual X-1000", page: 42, section: "5.2" },
-        { title: "Safety Protocol", page: 12, section: "3.1" }
-      ],
-      reasoning: "Retrieved from engine manual; safety validation passed."
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemma-4-26b-a4b-it:free',
+        messages: [
+          { role: 'user', content: `You are a maintenance assistant. Give a clear, safe, step-by-step response to this task:\n\n${query}` }
+        ]
+      }),
     });
-  }, 2000);
+
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content || 'No response returned.';
+    res.json({ text, sources: [], reasoning: 'Generated via OpenRouter' });
+
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-// Optional: endpoint for approval (just log it)
-app.post('/api/approve', (req, res) => {
-  console.log('Approved:', req.body);
-  res.json({ status: 'approved' });
-});
-
-// Optional: endpoint for rejection
-app.post('/api/reject', (req, res) => {
-  console.log('Rejected:', req.body);
-  res.json({ status: 'rejected' });
-});
+app.post('/api/approve', (req, res) => res.json({ status: 'approved' }));
+app.post('/api/reject', (req, res) => res.json({ status: 'rejected' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = 8000;
-app.listen(PORT, () => {
-  console.log(`Mock backend running at http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`Backend running at http://localhost:${PORT}`));
